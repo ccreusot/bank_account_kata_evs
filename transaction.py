@@ -2,8 +2,8 @@ import uuid
 import datetime
 
 class _TransactionEvent:
-    def __init__(self, accountID, amount, date = datetime.date.today(), transactionID=None):
-        self.uuid = uuid.uuid4()
+    def __init__(self, uuid = uuid.uuid4(), accountID = None, amount = None, date = datetime.date.today(), transactionID=None):
+        self.uuid = uuid
         self.accountID = accountID
         self.date = date
         self.amount = amount
