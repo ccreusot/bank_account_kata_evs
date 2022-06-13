@@ -5,23 +5,37 @@ from event_dispatcher import EventDispatcher
 from transaction import TransactionAccepted, TransactionDeclined, TransactionRequested
 
 class EventDispatcherTest(unittest.TestCase):
-    
-    def test_when_it_receive_a_transaction_request_event_it_should_dispatch_it_to_the_balance_manager(self):
-        transactions = [
-            TransactionRequested(uuid = "uuid1", accountID="accountId", amount=10),
-            TransactionDeclined(uuid = "uuid2", transactionID="uuid1"),
-            TransactionRequested(uuid = "uuid3", accountID="accountId", amount=-10),
-            TransactionAccepted(uuid = "uuid4", transactionID="uuid3"),
-        ]
 
-        for transaction in transactions:
-            with self.subTest(transaction = transaction):
-                balance_manager = BalanceManager()
-                balance_manager.compute_on_transaction = Mock()
-                event_dispatcher = EventDispatcher(balance_manager)
-                event_dispatcher.receive(transaction)
-                balance_manager.compute_on_transaction.assert_called_once()
-                
+    def test_when_emit_event_that_dispatcher_saves_it(self):
+        event_dispatcher = EventDispatcher()
+        transaction = TransactionRequested()
+        event_dispatcher.emit(transaction)
+        self.assertEqual(event_dispatcher._events_list, [transaction])
+
+    def test_when_subscribed_for_event_hasndler_should_be_called_once(self):
+        event_dispatcher = EventDispatcher()
+        transaction = TransactionRequested()
+        handler = Mock()
+        event_dispatcher.subscribe(TransactionRequested, handler)
+        event_dispatcher.emit(transaction)
+
+        handler.assert_called_once()
+
+    def test_when_multiple_subscriber_for_event_type_all_should_be_called_once(self):
+        event_dispatcher = EventDispatcher()
+        transaction = TransactionRequested()
+        handler1 = Mock()
+        handler2 = Mock()
+        handler3 = Mock()
+        event_dispatcher.subscribe(TransactionRequested, handler1)
+        event_dispatcher.subscribe(TransactionRequested, handler2)
+        event_dispatcher.subscribe(TransactionRequested, handler3)
+
+        event_dispatcher.emit(transaction)
+
+        handler1.assert_called_once()
+        handler2.assert_called_once()
+        handler3.assert_called_once()
 
 if __name__ == '__main__':
     unittest.main()

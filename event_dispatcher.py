@@ -1,7 +1,14 @@
 class EventDispatcher:
+    
+    def __init__(self):
+        self._events_list = []
+        self._handlers = []
 
-    def __init__(self, balance_manager):
-        self._balance_manager = balance_manager
-
-    def receive(self, event):
-        self._balance_manager.compute_on_transaction(event)
+    def emit(self, event):
+        self._events_list.append(event)
+        handlers = [handler for (event_type, handler) in self._handlers if event_type is type(event)]
+        for handler in handlers:
+            handler(event)
+        
+    def subscribe(self, event_type, handler):
+        self._handlers.append((event_type, handler))
